@@ -6,7 +6,7 @@
  * Time: 13:09
  */
 
-class shopNotifierConfigModel extends waModel
+class shopNotifierRuleModel extends waModel
 {
-  protected $table = 'shop_notifier_config';
+  protected $table = 'shop_notifier_rule';
 }

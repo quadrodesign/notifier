@@ -1,13 +1,13 @@
 <?php
 
-class shopNotifierPluginSettingsGetnotificationController extends waJsonController
+class shopNotifierPluginSettingsGetruleController extends waJsonController
 {
     public function execute()
     {  
         $id = waRequest::post('id');
         if(is_numeric($id)) {
-            $modelNotifierConfig = new shopNotifierConfigModel();
-            $result = $modelNotifierConfig->getById($id);
+            $modelNotifierRule = new shopNotifierRuleModel();
+            $result = $modelNotifierRule->getById($id);
             $result['data_contact'] = json_decode($result['data_contact'],true);
             
             if(count((array)$result['data_contact']['contact']) > 1) {

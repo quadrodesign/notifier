@@ -1,6 +1,6 @@
 <?php
 
-class shopNotifierPluginSettingsDeletenotificationController extends waJsonController
+class shopNotifierPluginSettingsDeleteruleController extends waJsonController
 {
     public function execute()
     {
