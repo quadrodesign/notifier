@@ -1,14 +1,14 @@
 <?php
 
-class shopStatusnotifierPluginSettingsGetthemeController extends waJsonController
+class shopNotifierPluginSettingsGetthemeController extends waJsonController
 {
     public function execute()
     {  
         $id = waRequest::post('id');
         if(is_numeric($id)) {
             $model = new waModel();
-            $path = wa()->getDataPath('plugins/receiveemail/templates/actions/frontend/' . $id . '.html', false, 'shop', true);
-            $result = $model->query("SELECT * FROM shop_statusnotifier_shablon WHERE id = '".$id."'")->fetchAssoc();
+            $path = wa()->getDataPath('plugins/notifier/templates/' . $id . '.html', false, 'shop', true);
+            $result = $model->query("SELECT * FROM shop_notifier_template WHERE id = '".$id."'")->fetchAssoc();
             $result['content'] = file_get_contents($path);
             $this->response['result'] = $result; 
             $this->response['message'] = 'ok'; 

@@ -1,20 +1,20 @@
 <?php
 
-class shopStatusnotifierLogModel extends waModel
+class shopNotifierPluginLogModel extends waModel
 {
-    protected $table = 'shop_statusnotifier_log';
+    protected $table = 'shop_notifier_log';
 
     public function add($data)
     {
-        $data['date'] = date('Y-m-d H:i:s');
+        $data['create_datetime'] = date('Y-m-d H:i:s');
         $log_id = $this->insert($data);
         return $log_id;
     }
     
     public function getLastDateByConfigId($id) {
-        return $this->select('date')
+        return $this->select('create_datetime')
                       ->where('config_id = '.(int)$id)
-                      ->order('datetime DESC')
+                      ->order('create_datetime DESC')
                       ->fetchField();
     }
 }

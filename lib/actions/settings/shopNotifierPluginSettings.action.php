@@ -1,6 +1,6 @@
 <?php
 
-class shopStatusnotifierPluginSettingsAction extends waViewAction
+class shopNotifierPluginSettingsAction extends waViewAction
 {
     public function execute()
     {
@@ -11,15 +11,15 @@ class shopStatusnotifierPluginSettingsAction extends waViewAction
             $state_names[$state_id] = $state['name'];
         }
         
-        $all_notifications = $model->query("SELECT * FROM shop_statusnotifier_configuration ")->fetchAll();
-        $themes = $model->query("SELECT * FROM shop_statusnotifier_shablon ")->fetchAll();
+        $all_notifications = $model->query("SELECT * FROM shop_notifier_config ")->fetchAll();
+        $themes = $model->query("SELECT * FROM shop_notifier_template ")->fetchAll();
 //        timestamp
 //        $time = strtotime('2015-04-01 18:11:44');
 //        $day = strtotime('+20 minute', $time);
 //        print_r(date('Y-m-d H:i:s', $day));
         
         $this->view->assign('cron', array(
-            'command' => 'php '.wa()->getConfig()->getRootPath().'/cli.php shop receiveemailPluginCheck',
+            'command' => 'php '.wa()->getConfig()->getRootPath().'/cli.php shop notifierCheck',
         ));
         
         $this->view->assign('state_names', $state_names);

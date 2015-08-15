@@ -26,7 +26,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=receiveemail&module=settings&action=deletenotification', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=deletenotification', { id:id}, function(response){
             if(response.status == 'ok'){
                 tr.remove();
             }
@@ -82,7 +82,7 @@ $(document).ready(function(){
                 }     
             } 
           } else {
-            $.post('?plugin=receiveemail&module=settings&action=searchcontact',{ query:query},function(response){
+            $.post('?plugin=notifier&module=settings&action=searchcontact',{ query:query},function(response){
                 var html = '';
                 $.each(response.data.search,function(key,value){
                     if(key == 'group') {
@@ -126,7 +126,7 @@ $(document).ready(function(){
     
     $('#first-form').submit(function(e){
         e.preventDefault();
-        $.post('?plugin=receiveemail&module=settings&action=save', $(this).serialize(), function(response){
+        $.post('?plugin=notifier&module=settings&action=save', $(this).serialize(), function(response){
             if(response.data.message == 'ok'){
                 if(response.data.data.period == 'd') {
                     var period = 'дней';
@@ -137,7 +137,7 @@ $(document).ready(function(){
                 if($('#all_notifications table tbody tr[data-id="'+response.data.data.id+'"]').length) {
                     var html = '';
                     html += '<td><a class="edit">'+response.data.data.config_name+'</a></td>';
-                    html += '<td><a class="edit">'+response.data.data.send_email+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.from+'</a></td>';
                     html += '<td><a class="edit">'+response.data.data.number_time+' '+period+'</a></td>';
                     html += '<td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
                     $('#all_notifications table tbody tr[data-id="'+response.data.data.id+'"]').html(html);
@@ -145,7 +145,7 @@ $(document).ready(function(){
                     var html = '';
                     html += '<tr data-id="'+response.data.data.id+'">';
                     html += '<td><a class="edit">'+response.data.data.config_name+'</a></td>';
-                    html += '<td><a class="edit">'+response.data.data.send_email+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.from+'</a></td>';
                     html += '<td><a class="edit">'+response.data.data.number_time+' '+period+'</a></td>';
                     html += '<td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
                     html += '</tr>';
@@ -165,7 +165,7 @@ $(document).ready(function(){
     $('#all_notifications table tbody .edit').live('click', function(e){
         e.preventDefault();
         var id = $(this).closest('tr').data('id');
-        $.post('?plugin=receiveemail&module=settings&action=getnotification', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=getnotification', { id:id}, function(response){
             if(response.status == 'ok'){
                 
                 $('[name="settings[config_name]"]').val(response.data.result.config_name);
@@ -247,7 +247,7 @@ $(document).ready(function(){
                 $('[name="settings[theme]"]').removeAttr('selected');
                 $('[name="settings[theme]"] option[value='+response.data.result.theme+']').attr('selected','selected');
                 
-                $('[name="settings[send_email]"]').val(response.data.result.send_email);
+                $('[name="settings[from]"]').val(response.data.result.from);
                 
                 $('[href="#tabs-add"]').click();
             } 
@@ -258,7 +258,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=receiveemail&module=settings&action=gettheme', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=gettheme', { id:id}, function(response){
             if(response.status == 'ok') {
                 $('[name="name_by_theme"]').val(response.data.result.name);
                 $('[name="hidden_theme_id"]').val(response.data.result.id);
@@ -291,7 +291,7 @@ $(document).ready(function(){
         var id = $('[name="hidden_theme_id"]').val();
         var name = $('[name="name_by_theme"]').val();
         var content = editor.getValue();
-        $.post('?plugin=receiveemail&module=settings&action=saveshablon', { id:id, name:name, content:content} , function(response){
+        $.post('?plugin=notifier&module=settings&action=savetemplate', { id:id, name:name, content:content} , function(response){
             if(response.status == 'ok') {
                 if($('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').length) {
                     var html = '';
@@ -325,7 +325,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=receiveemail&module=settings&action=deletetheme', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=deletetheme', { id:id}, function(response){
             if(response.status == 'ok'){
                 $('[name="settings[theme]"] option[value='+id+']').remove();
                 tr.remove();
@@ -423,9 +423,9 @@ table tbody a { cursor: pointer;}
                         </select>
                     </div>
                 </div>
-                <div class="field" style="padding: 10px;"><div class="name">Емайл отправителя</div>
+                <div class="field" style="padding: 10px;"><div class="name">Email отправителя</div>
                     <div class="value" style="">
-                        <input type="text" name="settings[send_email]" />
+                        <input type="text" name="settings[from]" />
                     </div>
                 </div>
                 <div class="field" style="padding: 10px;"><div class="name">Групировать по получателям</div>
@@ -487,7 +487,7 @@ table tbody a { cursor: pointer;}
                         {foreach $all_notifications as $n}
                         <tr data-id="{$n.id}">
                             <td><a class="edit">{$n.config_name}</a></td>
-                            <td><a class="edit">{$n.send_email}</a></td>
+                            <td><a class="edit">{$n.from}</a></td>
                             <td><a class="edit">{$n.number_time} {if $n.period == 'd'}дней{else}месяцев{/if}</a></td>
                             <td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
                         </tr>
@@ -551,8 +551,7 @@ table tbody a { cursor: pointer;}
         </div>
     </div>
 </div>
-<script type="text/javascript" src="/wa-apps/shop/plugins/receiveemail/js/jquery-1.10.2.js?{$smarty.now|date_format:'%H%M%S'}"></script>
-<script type="text/javascript" src="/wa-apps/shop/plugins/receiveemail/js/jquery-ui.js?{$smarty.now|date_format:'%H%M%S'}"></script>
+<script type="text/javascript" src="/wa-apps/shop/plugins/notifier/js/jquery-ui.js?{$smarty.now|date_format:'%H%M%S'}"></script>
 <script>
 $(function(){
     $('#tabs').tabs();

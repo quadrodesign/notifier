@@ -1,6 +1,6 @@
 <?php
 
-class shopStatusnotifierPluginSettingsSaveController extends waJsonController
+class shopNotifierPluginSettingsSaveController extends waJsonController
 {
     public function execute()
     {
@@ -8,7 +8,7 @@ class shopStatusnotifierPluginSettingsSaveController extends waJsonController
         unset($data['search_name']);
         if(isset($data['data_contact']) && is_array($data['data_contact'])) {
             if($data['config_name'] != '') {
-                if($data['send_email'] != '') {
+                if($data['from'] != '') {
                     $info = $data;
                     $model = new waModel();
                     $data_contact = json_encode($info['data_contact']);
@@ -22,7 +22,7 @@ class shopStatusnotifierPluginSettingsSaveController extends waJsonController
                     $info['group_senders'] = $info['group_senders'] ? 1 : 0 ;
                     $info['save_to_order_log'] = $info['save_to_order_log'] ? 1 : 0 ;
                     
-                    $result = $model->query("SELECT id FROM shop_statusnotifier_configuration WHERE config_name = '".mysql_escape_string($data['config_name'])."'")->fetchField();
+                    $result = $model->query("SELECT id FROM shop_notifier_config WHERE config_name = '".mysql_escape_string($data['config_name'])."'")->fetchField();
                     
                     $val_update = '';
                     $column_insert = '';
@@ -43,10 +43,10 @@ class shopStatusnotifierPluginSettingsSaveController extends waJsonController
                     }
                     
                     if($result) {
-                        $model->query("UPDATE shop_statusnotifier_configuration SET ".$val_update." WHERE id = '".$result."'");
+                        $model->query("UPDATE shop_notifier_config SET ".$val_update." WHERE id = '".$result."'");
                         $data['id'] = $result;
                     } else {
-                        $result = $model->query("INSERT INTO shop_statusnotifier_configuration (".$column_insert.") VALUES (".$value_insert.")");
+                        $result = $model->query("INSERT INTO shop_notifier_config (".$column_insert.") VALUES (".$value_insert.")");
                         $data['id'] = $result->lastInsertId();
                     }
                     

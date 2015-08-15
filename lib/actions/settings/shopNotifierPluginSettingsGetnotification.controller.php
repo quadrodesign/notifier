@@ -1,13 +1,13 @@
 <?php
 
-class shopStatusnotifierPluginSettingsGetnotificationController extends waJsonController
+class shopNotifierPluginSettingsGetnotificationController extends waJsonController
 {
     public function execute()
     {  
         $id = waRequest::post('id');
         if(is_numeric($id)) {
             $model = new waModel();
-            $result = $model->query("SELECT * FROM shop_statusnotifier_configuration WHERE id = '".$id."'")->fetchAssoc();
+            $result = $model->query("SELECT * FROM shop_notifier_config WHERE id = '".$id."'")->fetchAssoc();
             $result['data_contact'] = (array)json_decode($result['data_contact']);
             
             if(count((array)$result['data_contact']['contact']) > 1) {

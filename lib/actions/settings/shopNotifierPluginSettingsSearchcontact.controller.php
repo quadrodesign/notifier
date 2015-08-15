@@ -1,6 +1,6 @@
 <?php
 
-class shopStatusnotifierPluginSettingsSearchcontactController extends waJsonController
+class shopNotifierPluginSettingsSearchcontactController extends waJsonController
 {
     public function execute()
     {
@@ -24,8 +24,9 @@ class shopStatusnotifierPluginSettingsSearchcontactController extends waJsonCont
             }
         }
         
-        $model = new waModel();
-        $result = $model->query("SELECT * FROM wa_contact_category WHERE name LIKE '%".mysql_escape_string($query)."%'")->fetchAll();
+        $modelContactCategory = new waContactCategoryModel();
+        $result = $modelContactCategory->getByField('name',$query,true);
+//        query("SELECT * FROM wa_contact_category WHERE name LIKE '%".mysql_escape_string($query)."%'")->fetchAll();
         
         if($result) {
             $search['group'] = $result;
