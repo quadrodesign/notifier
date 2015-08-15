@@ -1,0 +1,524 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<script>
+$(document).ready(function(){   
+    $('.add_order_state').live('click', function(e){
+        e.preventDefault();
+        var html = $('#order_states .order_state:first').html();
+        var new_html = '<span><br/><br/><select class="order_state" name="settings[state_name][]">' + html + '</select><a href="" class="delete-order" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></span>';
+        if($('#order_states .delete-bw:last').length) {
+            $('#order_states .delete-bw:last').closest('span').after(new_html);
+        } else {
+            $('#order_states .order_state:last').after(new_html);
+        }
+    });
+    
+    $('.delete-order').live('click',function(e){
+        e.preventDefault();
+        $(this).closest('span').remove();
+    });
+    
+    $('.delete-contact').live('click',function(e){
+        e.preventDefault();
+        $(this).closest('tr').remove();
+    });
+    
+    $('.delete-notification').live('click',function(e){
+        e.preventDefault();
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        $.post('?plugin=statusnotifier&module=settings&action=deletenotification', { id:id}, function(response){
+            if(response.status == 'ok'){
+                tr.remove();
+            }
+        },'json');
+    });
+    
+    
+     $('[name="settings[search_name]"]').on('keyup',function(e){
+        e.preventDefault();
+        var len = $(this).val().length;
+        var th = $(this);
+        var query = $(this).val();
+        if(len <= 1) {
+            $('#find_city').empty().hide();
+       }
+
+       if(len > 1) {
+          if((e.keyCode >= 38 && e.keyCode <= 40) || e.keyCode == 13) { 
+            if($('#find_city').is(':visible')) {
+                if($('#find_city li').hasClass('active')) {
+                    if(e.keyCode == 40) {
+                        var next = $('#find_city li.active').next().index();
+                        if(next == -1) {
+                            next = 0;
+                        }
+                        $('#find_city li.active').removeClass('active');
+                        $('#find_city li:eq('+next+')').addClass('active');
+                    } else if(e.keyCode == 38) {
+                        var prev = $('#find_city li.active').prev().index();
+                        $('#find_city li.active').removeClass('active');
+                        $('#find_city li:eq('+prev+')').addClass('active');
+                    }
+                    
+                    if(e.keyCode == 13) {
+                        var cat = $(this).data('cat');
+                        var id = $(this).data('id');
+                        if(!$('[name="settings[data_contact]['+cat+']['+id+']"]').length){
+                            var html = '';
+                            html += '<tr>';
+                            html += '<td>'+$(this).html()+'</td>';
+                            html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                            html += '<input type="hidden" name="settings[data_contact]['+cat+']['+id+']" value="1" />';
+                            html += '</tr>';
+                            $('#table_find_city table').append(html);
+                            $('#table_find_city').show();
+                        }
+                        
+                        $('[name="settings[search_name]"]').val('');
+                        $('#find_city').empty().hide();
+                    }
+                } else {
+                    $('#find_city li:eq(0)').addClass('active');
+                }     
+            } 
+          } else {
+            $.post('?plugin=statusnotifier&module=settings&action=searchcontact',{ query:query},function(response){
+                var html = '';
+                $.each(response.data.search,function(key,value){
+                    if(key == 'group') {
+                        $.each(value, function (kgroup, vgroup){
+                            html += '<li><a data-cat="group" data-id="'+vgroup.id+'">'+vgroup.name+' <span>(Група)</span></a></li>';
+                        });
+                    } else {
+                        $.each(value, function (kcont, vcont){
+                            html += '<li><a data-cat="contact" data-id="'+vcont.id+'">'+vcont.name+' <b>'+vcont.email+'</b> <span>(Контакт)</span></a></li>';
+                        });
+                    }
+                });
+                if(response.data.search != 'fail' && html.length > 0) {
+                    $('#find_city').empty().show().html(html);       
+                } else {
+                    $('#find_city').empty().hide();
+                } 
+            },'json');
+          } 
+       }
+   });
+   
+   $('#find_city li a').live('click', function(e) {
+        e.preventDefault();
+        var cat = $(this).data('cat');
+        var id = $(this).data('id');
+        if(!$('[name="settings[data_contact]['+cat+']['+id+']"]').length){
+            var html = '';
+            html += '<tr>';
+            html += '<td>'+$(this).html()+'</td>';
+            html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+            html += '<input type="hidden" name="settings[data_contact]['+cat+']['+id+']" value="'+id+'" />';
+            html += '</tr>';
+            $('#table_find_city table').append(html);
+            $('#table_find_city').show();
+        }
+        
+        $('[name="settings[search_name]"]').val('');
+        $('#find_city').empty().hide();
+    });
+    
+    $('#first-form').submit(function(e){
+        e.preventDefault();
+        $.post('?plugin=statusnotifier&module=settings&action=save', $(this).serialize(), function(response){
+            if(response.data.message == 'ok'){
+                if(response.data.data.period == 'd') {
+                    var period = 'дней';
+                } else {
+                    var period = 'месяцев';
+                }
+                
+                if($('#all_notifications table tbody tr[data-id="'+response.data.data.id+'"]').length) {
+                    var html = '';
+                    html += '<td><a class="edit">'+response.data.data.config_name+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.send_email+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.number_time+' '+period+'</a></td>';
+                    html += '<td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    $('#all_notifications table tbody tr[data-id="'+response.data.data.id+'"]').html(html);
+                } else {
+                    var html = '';
+                    html += '<tr data-id="'+response.data.data.id+'">';
+                    html += '<td><a class="edit">'+response.data.data.config_name+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.send_email+'</a></td>';
+                    html += '<td><a class="edit">'+response.data.data.number_time+' '+period+'</a></td>';
+                    html += '<td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    html += '</tr>';
+                    $('#all_notifications table tbody').append(html);
+                }
+                $('#plugins-settings-form-status').fadeIn(600).delay(1100).fadeOut(700);
+            } else if(response.data.message == 'fail_send_email'){
+                $('#status_send_email').fadeIn(600).delay(1100).fadeOut(700);
+            } else if(response.data.message == 'fail_config_name_null'){
+                $('#status_config_name_null').fadeIn(600).delay(1100).fadeOut(700);
+            } else if(response.data.message == 'fail_data_contact'){
+                $('#status_data_contact').fadeIn(600).delay(1100).fadeOut(700);
+            }
+        },'json');
+    });
+    
+    $('#all_notifications table tbody .edit').live('click', function(e){
+        e.preventDefault();
+        var id = $(this).closest('tr').data('id');
+        $.post('?plugin=statusnotifier&module=settings&action=getnotification', { id:id}, function(response){
+            if(response.status == 'ok'){
+                
+                $('[name="settings[config_name]"]').val(response.data.result.config_name);
+                
+                $('#table_find_city table').empty();
+                $.each(response.data.result.data_contact.contact, function(k,v){
+                    var html = '';
+                    html += '<tr>';
+                    html += '<td>'+response.data.result.contacts[v].name+' <b>'+response.data.result.contacts[v].email+'</b> <span>(Контакт)</span></td>';
+                    html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    html += '<input type="hidden" name="settings[data_contact][contact]['+v+']" value="1" />';
+                    html += '</tr>';
+                    $('#table_find_city table').append(html);
+                    $('#table_find_city').show();
+                });
+                
+                $.each(response.data.result.data_contact.group, function(k,v){
+                    var html = '';
+                    html += '<tr>';
+                    html += '<td>'+response.data.result.groups[v].name+' <span>(Група)</span></td>';
+                    html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    html += '<input type="hidden" name="settings[data_contact][group]['+v+']" value="1" />';
+                    html += '</tr>';
+                    $('#table_find_city table').append(html);
+                    $('#table_find_city').show();
+                });
+                
+                var html = $('#order_states .order_state:first').html();
+                var new_html = '<span><br/><br/><select class="order_state" name="settings[state_name][]">' + html + '</select><a href="" class="delete-order" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></span>';
+                var j = 0;
+                $('#order_states .order_state').each(function(){
+                    if(j != 0){
+                        $(this).closest('span').remove();
+                    }
+                    j = j + 1;
+                });
+                var i = 0;
+                var new_state = '';
+                $.each(response.data.result.state_name, function(k,v){
+                    $('#order_states .order_state').removeAttr('selected');
+                    if(i == 0) {
+                        $('#order_states .order_state:first option[value='+v+']').attr('selected', 'selected');
+                    } else {
+                        if($('#order_states .delete-bw:last').length) {
+                            $('#order_states .delete-bw:last').closest('span').after(new_html);
+                        } else {
+                            $('#order_states .order_state:last').after(new_html);
+                        }
+                        $('#order_states .order_state:last option[value='+v+']').attr('selected','selected');
+                    }
+                    i = i + 1;
+                });
+                
+                $('[name="settings[number_time]"]').removeAttr('selected');
+                $('[name="settings[number_time]"] option[value='+response.data.result.number_time+']').attr('selected','selected');
+                
+                $('[name="settings[period]"]').removeAttr('selected');
+                $('[name="settings[period]"] option[value='+response.data.result.period+']').attr('selected','selected');
+                
+                $('[name="settings[theme]"]').removeAttr('selected');
+                $('[name="settings[theme]"] option[value='+response.data.result.theme+']').attr('selected','selected');
+                
+                $('[name="settings[send_email]"]').val(response.data.result.send_email);
+                
+                $('[href="#tabs-add"]').click();
+            } 
+        },'json');
+    });
+    
+    $('.edit_theme').live('click', function(e){
+        e.preventDefault();
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        $.post('?plugin=statusnotifier&module=settings&action=gettheme', { id:id}, function(response){
+            if(response.status == 'ok') {
+                $('[name="name_by_theme"]').val(response.data.result.name);
+                $('[name="hidden_theme_id"]').val(response.data.result.id);
+                editor.setValue(response.data.result.content);
+                $('#add_new_theme').show();
+            }
+        },'json');
+    });
+    
+    if(typeof(CodeMirror) == 'function') {
+        var editor = CodeMirror.fromTextArea(document.getElementById('new_notification'),{
+            mode: "text/html",
+            tabMode: "indent",
+            height: "dinamic",
+            lineWrapping: true
+        });
+        
+        $(".CodeMirror-scroll").css('min-height', '700px');
+    }
+    
+    $('#display_add_theme').live('click', function(e){
+        $('[name="name_by_theme"]').val('');
+        $('[name="hidden_theme_id"]').val('');
+        editor.setValue('');
+        $('#add_new_theme').show();
+    });
+    
+    $('#save_theme').live('click', function(){
+        var div = $(this).closest('div');
+        var id = $('[name="hidden_theme_id"]').val();
+        var name = $('[name="name_by_theme"]').val();
+        var content = editor.getValue();
+        $.post('?plugin=statusnotifier&module=settings&action=saveshablon', { id:id, name:name, content:content} , function(response){
+            if(response.status == 'ok') {
+                if($('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').length) {
+                    var html = '';
+                    html += '<td><a class="edit_theme">'+response.data.result.name+'</a></td>';
+                    html += '<td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    $('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').html(html);
+                } else {
+                    var html = '';
+                    html += '<tr data-id="'+response.data.result.id+'">';
+                    html += '<td><a class="edit_theme">'+response.data.result.name+'</a></td>';
+                    html += '<td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    html += '</tr>';
+                    
+                    $('#tabs-theme table tbody').append(html);
+                }
+                
+                if($('[name="settings[theme]"]').length) {
+                    $('[name="settings[theme]"]').append('<option value="'+response.data.result.id+'">'+response.data.result.name+'</option>');
+                } else {
+                    $('.theme_receive').html('<select name="settings[theme]"><option value="'+response.data.result.id+'">'+response.data.result.name+'</option></select>');
+                }
+                $('[name="name_by_theme"]').val('');
+                $('[name="hidden_theme_id"]').val('');
+                editor.setValue('');
+                div.find('#plugins-settings-form-status').fadeIn(700).delay(1100).fadeOut(600);
+            }
+        },'json');
+    });
+    
+    $('.delete-theme').live('click',function(e){
+        e.preventDefault();
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        $.post('?plugin=statusnotifier&module=settings&action=deletetheme', { id:id}, function(response){
+            if(response.status == 'ok'){
+                $('[name="settings[theme]"] option[value='+id+']').remove();
+                tr.remove();
+            }
+        },'json');
+    });
+    
+    $('.add_theme').live('click', function(e){
+        e.preventDefault();
+        //editor.setValue('var msg = "Hi";');
+        //alert(editor.getValue());
+    });
+});
+</script>
+<style>
+.ui-widget-content { border:none;}
+.ui-widget-header {
+    border:none;
+    border-bottom: 1px solid #aaaaaa;
+    color: #222222;
+    background: #fff;
+    font-weight: bold;
+    border-radius: 0!important;
+}
+
+#find_city{ z-index: 999;position: absolute; box-shadow:0px 2px 5px #000; border-radius: 5px; overflow:hidden;  border: 1px solid #f2f2f2; top: 24px; left: 0; min-width: 318px; padding: 0; margin:0; background:#fff; text-align: left; }
+#find_city li { list-style: none; border-bottom: 1px solid #e0e0e0;}
+#find_city li span{ color: grey; font-size: 10px; font-weight: bold; font-style: italic;}
+#find_city li:last-child{ border-bottom:0; }
+#find_city li:hover , #find_city li.active{ background: #f2f2f2; }
+#find_city li a{ color:#444; text-decoration:none; padding: 6px 10px; display: block; font-size:14px; cursor: pointer; }
+table tbody a { cursor: pointer;}
+.CodeMirror-wrap { border: 1px solid #ccc; box-shadow: 0 0 5px #ccc;}
+</style>
+<h1>Настройки</h1>
+<div class="fields form" style="width: 80%;">
+    <div class="field" style="padding: 10px;"><div class="name">Команда для CRON</div>
+        <div class="value" style="">
+            {$cron.command}
+        </div>
+    </div><br /><br />
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabs-add">Добавить напоминания</a></li>
+            <li><a href="#tabs-all">Все напоминания</a></li>
+            <li><a href="#tabs-theme">Шаблоны писем</a></li>
+        </ul>
+        <div id="tabs-add">
+            <form method="post" id="first-form">
+                <div class="field" style="padding: 10px;"><div class="name">Название</div>
+                    <div class="value" style="">
+                        <input type="text" name="settings[config_name]" />
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Группа или контакт</div>
+                    <div class="value" style="">
+                        <input type="text" name="settings[search_name]" />
+                        <ul id="find_city" style="display: none;">
+                        </ul>
+                        <div class="block" id="table_find_city" style="display: none;">
+                           <table class="zebra">
+                           </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Статусы заказов</div>
+                    <div class="value" style="" id="order_states">
+                        <select class="order_state" name="settings[state_name][]">
+                        {foreach $state_names as $key => $value}
+                            <option value="{$key}">{$value}</option>
+                        {/foreach}
+                        </select>
+                        <ul class="menu-v s-category-action">
+                            <li><a href="" class="add_order_state small inline-link js-action"><i class="icon10 add"></i> <b><i>Добавить статус</i></b></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Время напоминания</div>
+                    <div class="value" style="">
+                        <select name="settings[number_time]">
+                        {for $times = 1 to 30}
+                            <option value="{$times}">{$times}</option>
+                        {/for}
+                        </select>
+                        <select name="settings[period]">
+                            <option value="d">Дней</option>
+                            <option value="n">Недель</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Емайл отправителя</div>
+                    <div class="value" style="">
+                        <input type="text" name="settings[send_email]" />
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Шаблон</div>
+                    <div class="value theme_receive" style="">
+                    {if $themes && count($themes) >= 1}
+                        <select name="settings[theme]">
+                        {foreach $themes as $t}
+                            <option value="{$t.id}">{$t.name}</option>
+                        {/foreach}
+                        </select>
+                    {else}
+                        <span style="font-style: italic; color: red;"><strong>Для выбора создайте шаблон</strong></span>
+                    {/if}
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="value submit">
+                        <input type="submit" class="button green" value="Сохранить">
+                        <span id="plugins-settings-form-status" style="display:none">
+                            <i style="vertical-align:middle" class="icon16 yes"></i> [`Saved`]
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_config_name">
+                             <b>Такое название уже существует</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_config_name_null">
+                             <b>Заполните поля названия</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_send_email">
+                             <b>Заполните поля емайл отправителя</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_data_contact">
+                             <b>Выберите группу или контакт которые будут получать уведомления</b>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="tabs-all">
+            <div class="block" id="all_notifications" {if !$all_notifications} style="display: none;"{/if}>
+               <table class="zebra">
+                <thead>
+                    <th>Название</th>
+                    <th>Емайл отправителя</th>
+                    <th>Время напоминания</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {if $all_notifications}
+                        {foreach $all_notifications as $n}
+                        <tr data-id="{$n.id}">
+                            <td><a class="edit">{$n.config_name}</a></td>
+                            <td><a class="edit">{$n.send_email}</a></td>
+                            <td><a class="edit">{$n.number_time} {if $n.period == 'd'}дней{else}месяцев{/if}</a></td>
+                            <td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
+                        </tr>
+                        {/foreach}
+                    {/if}
+                </tbody>
+               </table>
+            </div>
+        </div>
+        <div id="tabs-theme">
+            <div class="block" id="all_theme">
+               <table class="zebra">
+                <thead>
+                    <th>Название</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {if $themes}
+                        {foreach $themes as $n}
+                        <tr data-id="{$n.id}">
+                            <td><a class="edit_theme">{$n.name}</a></td>
+                            <td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
+                        </tr>
+                        {/foreach}
+                    {/if}
+                </tbody>
+               </table>
+            </div><br /><br />
+            <input type="button" class="button green" id="display_add_theme" value="Добавить шаблон сообщения" style="cursor: pointer;" /><br />
+            <div id="add_new_theme" style="display: none;">
+                <hr />
+                <div class="field" style="padding: 10px;"><div class="name">Название шаблона</div>
+                    <div class="value" style="">
+                        <input type="text" name="name_by_theme" />
+                    </div>
+                </div>
+                <textarea id="new_notification"></textarea><br />
+                <input type="hidden" name="hidden_theme_id" value="" />
+                <div class="field">
+                    <div class="value submit">
+                        <input type="button" class="button green" id="save_theme" value="Сохранить шаблон сообщения" style="cursor: pointer;" />
+                        <span id="plugins-settings-form-status" style="display:none">
+                            <i style="vertical-align:middle" class="icon16 yes"></i> [`Saved`]
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_config_name">
+                             <b>Такое название уже существует</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_config_name_null">
+                             <b>Заполните поля названия</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_send_email">
+                             <b>Заполните поля емайл отправителя</b>
+                        </span>
+                        <span style="font-style: italic; color: red;display:none;" id="status_data_contact">
+                             <b>Выберите группу или контакт которые будут получать уведомления</b>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="/wa-apps/shop/plugins/statusnotifier/js/jquery-1.10.2.js?{$smarty.now|date_format:'%H%M%S'}"></script>
+<script type="text/javascript" src="/wa-apps/shop/plugins/statusnotifier/js/jquery-ui.js?{$smarty.now|date_format:'%H%M%S'}"></script>
+<script>
+$(function(){
+    $('#tabs').tabs();
+})
+</script>
