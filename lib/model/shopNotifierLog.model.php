@@ -1,6 +1,6 @@
 <?php
 
-class shopNotifierPluginLogModel extends waModel
+class shopNotifierLogModel extends waModel
 {
     protected $table = 'shop_notifier_log';
 

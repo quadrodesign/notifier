@@ -6,28 +6,29 @@ class shopNotifierPluginSettingsGetnotificationController extends waJsonControll
     {  
         $id = waRequest::post('id');
         if(is_numeric($id)) {
-            $model = new waModel();
-            $result = $model->query("SELECT * FROM shop_notifier_config WHERE id = '".$id."'")->fetchAssoc();
-            $result['data_contact'] = (array)json_decode($result['data_contact']);
+            $modelNotifierConfig = new shopNotifierConfigModel();
+            $result = $modelNotifierConfig->getById($id);
+            $result['data_contact'] = json_decode($result['data_contact'],true);
             
             if(count((array)$result['data_contact']['contact']) > 1) {
-                $ids_contacts = implode(',',(array)$result['data_contact']['contact']);
+                $ids_contact = implode(',',(array)$result['data_contact']['contact']);
             } else if(count((array)$result['data_contact']['contact']) == 1){
                 foreach($result['data_contact']['contact'] as $c){
-                    $ids_contacts = $c;
+                    $ids_contact = $c;
                 }
             } 
             
-            if(isset($ids_contacts)) {
+            if(isset($ids_contact)) {
                 $result['contacts'] = array();
-                $collection = new waContactsCollection('/id/'.$ids_contacts.'/');
+                $collection = new waContactsCollection('/id/'.$ids_contact.'/');
                 $result['contacts'] = $collection->getContacts('*');
             }
-            
-            if(count($result['data_contact']['group'])) {
+
+            if(array_key_exists("group",$result['data_contact']) && count($result['data_contact']['group'])) {
                 $result['groups'] = array();
-                foreach($result['data_contact']['group'] as $gr) {
-                    $result['groups'][$gr] = (array)$model->query("SELECT * FROM wa_contact_category WHERE id = '".$gr."'")->fetchAssoc();
+                $modelContactCategory = new waContactCategoryModel();
+                foreach($result['data_contact']['group'] as $group_id) {
+                    $result['groups'][$group_id] = $modelContactCategory->getById($group_id);
                 }
             }
             

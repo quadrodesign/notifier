@@ -1,6 +1,6 @@
 <?php
 return array (
-  'name' => 'Оповещания',
+  'name' => 'Оповещения по статусам',
   'shop_settings' => true,
   'handlers' => 
   array (

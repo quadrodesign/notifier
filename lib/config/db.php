@@ -8,7 +8,7 @@ return array(
     'number_time' => array('int', 2, 'null' => 0),
     'period' => array('varchar', 3, 'null' => 'd'),
     'from' => array('varchar', 255, 'null' => ''),
-    'theme' => array('int', 5, 'null' => 0),
+    'template' => array('int', 5, 'null' => 0),
     'group_senders' => array('int', 1, 'null' => 0),
     'save_to_order_log' => array('int', 1, 'null' => 0),
     'repeat_number_time' => array('int', 11, 'null' => 0),

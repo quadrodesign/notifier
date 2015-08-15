@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/templates/smoothness/jquery-ui.css">
 <script>
 $(document).ready(function(){   
     $('.add_order_state').live('click', function(e){
@@ -244,8 +244,8 @@ $(document).ready(function(){
                 $('[name="settings[period]"]').removeAttr('selected');
                 $('[name="settings[period]"] option[value='+response.data.result.period+']').attr('selected','selected');
                 
-                $('[name="settings[theme]"]').removeAttr('selected');
-                $('[name="settings[theme]"] option[value='+response.data.result.theme+']').attr('selected','selected');
+                $('[name="settings[template]"]').removeAttr('selected');
+                $('[name="settings[template]"] option[value='+response.data.result.template+']').attr('selected','selected');
                 
                 $('[name="settings[from]"]').val(response.data.result.from);
                 
@@ -254,16 +254,16 @@ $(document).ready(function(){
         },'json');
     });
     
-    $('.edit_theme').live('click', function(e){
+    $('.edit_template').live('click', function(e){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=notifier&module=settings&action=gettheme', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=gettemplate', { id:id}, function(response){
             if(response.status == 'ok') {
-                $('[name="name_by_theme"]').val(response.data.result.name);
-                $('[name="hidden_theme_id"]').val(response.data.result.id);
+                $('[name="name_by_template"]').val(response.data.result.name);
+                $('[name="hidden_template_id"]').val(response.data.result.id);
                 editor.setValue(response.data.result.content);
-                $('#add_new_theme').show();
+                $('#add_new_template').show();
             }
         },'json');
     });
@@ -279,61 +279,61 @@ $(document).ready(function(){
         $(".CodeMirror-scroll").css('min-height', '700px');
     }
     
-    $('#display_add_theme').live('click', function(e){
-        $('[name="name_by_theme"]').val('');
-        $('[name="hidden_theme_id"]').val('');
+    $('#display_add_template').live('click', function(e){
+        $('[name="name_by_template"]').val('');
+        $('[name="hidden_template_id"]').val('');
         editor.setValue('');
-        $('#add_new_theme').show();
+        $('#add_new_template').show();
     });
     
-    $('#save_theme').live('click', function(){
+    $('#save_template').live('click', function(){
         var div = $(this).closest('div');
-        var id = $('[name="hidden_theme_id"]').val();
-        var name = $('[name="name_by_theme"]').val();
+        var id = $('[name="hidden_template_id"]').val();
+        var name = $('[name="name_by_template"]').val();
         var content = editor.getValue();
         $.post('?plugin=notifier&module=settings&action=savetemplate', { id:id, name:name, content:content} , function(response){
             if(response.status == 'ok') {
-                if($('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').length) {
+                if($('#tabs-template table tbody tr[data-id='+response.data.result.id+']').length) {
                     var html = '';
-                    html += '<td><a class="edit_theme">'+response.data.result.name+'</a></td>';
-                    html += '<td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
-                    $('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').html(html);
+                    html += '<td><a class="edit_template">'+response.data.result.name+'</a></td>';
+                    html += '<td><a href="" class="delete-template" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    $('#tabs-template table tbody tr[data-id='+response.data.result.id+']').html(html);
                 } else {
                     var html = '';
                     html += '<tr data-id="'+response.data.result.id+'">';
-                    html += '<td><a class="edit_theme">'+response.data.result.name+'</a></td>';
-                    html += '<td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                    html += '<td><a class="edit_template">'+response.data.result.name+'</a></td>';
+                    html += '<td><a href="" class="delete-template" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
                     html += '</tr>';
                     
-                    $('#tabs-theme table tbody').append(html);
+                    $('#tabs-template table tbody').append(html);
                 }
                 
-                if($('[name="settings[theme]"]').length) {
-                    $('[name="settings[theme]"]').append('<option value="'+response.data.result.id+'">'+response.data.result.name+'</option>');
+                if($('[name="settings[template]"]').length) {
+                    $('[name="settings[template]"]').append('<option value="'+response.data.result.id+'">'+response.data.result.name+'</option>');
                 } else {
-                    $('.theme_receive').html('<select name="settings[theme]"><option value="'+response.data.result.id+'">'+response.data.result.name+'</option></select>');
+                    $('.template_receive').html('<select name="settings[template]"><option value="'+response.data.result.id+'">'+response.data.result.name+'</option></select>');
                 }
-                $('[name="name_by_theme"]').val('');
-                $('[name="hidden_theme_id"]').val('');
+                $('[name="name_by_template"]').val('');
+                $('[name="hidden_template_id"]').val('');
                 editor.setValue('');
                 div.find('#plugins-settings-form-status').fadeIn(700).delay(1100).fadeOut(600);
             }
         },'json');
     });
     
-    $('.delete-theme').live('click',function(e){
+    $('.delete-template').live('click',function(e){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=notifier&module=settings&action=deletetheme', { id:id}, function(response){
+        $.post('?plugin=notifier&module=settings&action=deletetemplate', { id:id}, function(response){
             if(response.status == 'ok'){
-                $('[name="settings[theme]"] option[value='+id+']').remove();
+                $('[name="settings[template]"] option[value='+id+']').remove();
                 tr.remove();
             }
         },'json');
     });
     
-    $('.add_theme').live('click', function(e){
+    $('.add_template').live('click', function(e){
         e.preventDefault();
         //editor.setValue('var msg = "Hi";');
         //alert(editor.getValue());
@@ -371,7 +371,7 @@ table tbody a { cursor: pointer;}
         <ul>
             <li><a href="#tabs-add">Добавить напоминания</a></li>
             <li><a href="#tabs-all">Все напоминания</a></li>
-            <li><a href="#tabs-theme">Шаблоны писем</a></li>
+            <li><a href="#tabs-template">Шаблоны писем</a></li>
         </ul>
         <div id="tabs-add">
             <form method="post" id="first-form">
@@ -403,14 +403,14 @@ table tbody a { cursor: pointer;}
                         </ul>
                     </div>
                 </div>
-                <div class="field" style="padding: 10px;"><div class="name">Время напоминания</div>
+                <div class="field" style="padding: 10px;"><div class="name">Интервал напоминания</div>
                     <div class="value" style="">
                         <input style="width: 40px; min-width: 40px;" type="text" name="settings[number_time]" value="" required="required"/>
                         <select name="settings[period]">
                             <option value="m">Минут</option>
                             <option value="h">Часов</option>
                             <option value="d">Дней</option>
-                            <option value="n">Недель</option>
+                            <option value="w">Недель</option>
                         </select>
                     </div>
                 </div>
@@ -439,10 +439,10 @@ table tbody a { cursor: pointer;}
                     </div>
                 </div>
                 <div class="field" style="padding: 10px;"><div class="name">Шаблон</div>
-                    <div class="value theme_receive" style="">
-                    {if $themes && count($themes) >= 1}
-                        <select name="settings[theme]">
-                        {foreach $themes as $t}
+                    <div class="value template_receive" style="">
+                    {if $templates && count($templates) >= 1}
+                        <select name="settings[template]">
+                        {foreach $templates as $t}
                             <option value="{$t.id}">{$t.name}</option>
                         {/foreach}
                         </select>
@@ -497,38 +497,38 @@ table tbody a { cursor: pointer;}
                </table>
             </div>
         </div>
-        <div id="tabs-theme">
-            <div class="block" id="all_theme">
+        <div id="tabs-template">
+            <div class="block" id="all_template">
                <table class="zebra">
                 <thead>
                     <th>Название</th>
                     <th></th>
                 </thead>
                 <tbody>
-                    {if $themes}
-                        {foreach $themes as $n}
+                    {if $templates}
+                        {foreach $templates as $n}
                         <tr data-id="{$n.id}">
-                            <td><a class="edit_theme">{$n.name}</a></td>
-                            <td><a href="" class="delete-theme" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
+                            <td><a class="edit_template">{$n.name}</a></td>
+                            <td><a href="" class="delete-template" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
                         </tr>
                         {/foreach}
                     {/if}
                 </tbody>
                </table>
             </div><br /><br />
-            <input type="button" class="button green" id="display_add_theme" value="Добавить шаблон сообщения" style="cursor: pointer;" /><br />
-            <div id="add_new_theme" style="display: none;">
+            <input type="button" class="button green" id="display_add_template" value="Добавить шаблон сообщения" style="cursor: pointer;" /><br />
+            <div id="add_new_template" style="display: none;">
                 <hr />
                 <div class="field" style="padding: 10px;"><div class="name">Название шаблона</div>
                     <div class="value" style="">
-                        <input type="text" name="name_by_theme" />
+                        <input type="text" name="name_by_template" />
                     </div>
                 </div>
                 <textarea id="new_notification"></textarea><br />
-                <input type="hidden" name="hidden_theme_id" value="" />
+                <input type="hidden" name="hidden_template_id" value="" />
                 <div class="field">
                     <div class="value submit">
-                        <input type="button" class="button green" id="save_theme" value="Сохранить шаблон сообщения" style="cursor: pointer;" />
+                        <input type="button" class="button green" id="save_template" value="Сохранить шаблон сообщения" style="cursor: pointer;" />
                         <span id="plugins-settings-form-status" style="display:none">
                             <i style="vertical-align:middle" class="icon16 yes"></i> [`Saved`]
                         </span>

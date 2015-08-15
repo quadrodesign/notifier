@@ -25,7 +25,7 @@ class shopNotifierPluginSettingsSearchcontactController extends waJsonController
         }
         
         $modelContactCategory = new waContactCategoryModel();
-        $result = $modelContactCategory->getByField('name',$query,true);
+        $result = $modelContactCategory->getByField('name',$query);
 //        query("SELECT * FROM wa_contact_category WHERE name LIKE '%".mysql_escape_string($query)."%'")->fetchAll();
         
         if($result) {

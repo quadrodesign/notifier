@@ -10,7 +10,7 @@ class shopNotifierPluginSettingsSaveController extends waJsonController
             if($data['config_name'] != '') {
                 if($data['from'] != '') {
                     $info = $data;
-                    $model = new waModel();
+                    $modelNotifierConfig = new shopNotifierConfigModel();
                     $data_contact = json_encode($info['data_contact']);
                     unset($info['data_contact']);
                     $info['data_contact'] = $data_contact;
@@ -18,12 +18,12 @@ class shopNotifierPluginSettingsSaveController extends waJsonController
                     $state_name = json_encode($info['state_name']);
                     unset($info['state_name']);
                     $info['state_name'] = $state_name;
-                    
-                    $info['group_senders'] = $info['group_senders'] ? 1 : 0 ;
+
+                    if (array_key_exists('group_senders',$info)) $info['group_senders'] = $info['group_senders'] ? 1 : 0 ;
                     $info['save_to_order_log'] = $info['save_to_order_log'] ? 1 : 0 ;
-                    
-                    $result = $model->query("SELECT id FROM shop_notifier_config WHERE config_name = '".mysql_escape_string($data['config_name'])."'")->fetchField();
-                    
+
+                    $result = $modelNotifierConfig->getByField('config_name',$data['config_name']);
+
                     $val_update = '';
                     $column_insert = '';
                     $value_insert = '';
@@ -43,11 +43,12 @@ class shopNotifierPluginSettingsSaveController extends waJsonController
                     }
                     
                     if($result) {
-                        $model->query("UPDATE shop_notifier_config SET ".$val_update." WHERE id = '".$result."'");
-                        $data['id'] = $result;
+                        $modelNotifierConfig->updateById($result['id'],$info);
+//                        query("UPDATE shop_notifier_config SET ".$val_update." WHERE id = '".$result['id']."'");
+                        $data['id'] = $result['id'];
                     } else {
-                        $result = $model->query("INSERT INTO shop_notifier_config (".$column_insert.") VALUES (".$value_insert.")");
-                        $data['id'] = $result->lastInsertId();
+                        $data['id'] = $modelNotifierConfig->insert($info);
+                        //query("INSERT INTO shop_notifier_config (".$column_insert.") VALUES (".$value_insert.")");
                     }
                     
                     $this->response['data'] = $data;
