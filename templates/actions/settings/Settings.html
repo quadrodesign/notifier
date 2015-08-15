@@ -26,7 +26,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=statusnotifier&module=settings&action=deletenotification', { id:id}, function(response){
+        $.post('?plugin=receiveemail&module=settings&action=deletenotification', { id:id}, function(response){
             if(response.status == 'ok'){
                 tr.remove();
             }
@@ -82,7 +82,7 @@ $(document).ready(function(){
                 }     
             } 
           } else {
-            $.post('?plugin=statusnotifier&module=settings&action=searchcontact',{ query:query},function(response){
+            $.post('?plugin=receiveemail&module=settings&action=searchcontact',{ query:query},function(response){
                 var html = '';
                 $.each(response.data.search,function(key,value){
                     if(key == 'group') {
@@ -126,7 +126,7 @@ $(document).ready(function(){
     
     $('#first-form').submit(function(e){
         e.preventDefault();
-        $.post('?plugin=statusnotifier&module=settings&action=save', $(this).serialize(), function(response){
+        $.post('?plugin=receiveemail&module=settings&action=save', $(this).serialize(), function(response){
             if(response.data.message == 'ok'){
                 if(response.data.data.period == 'd') {
                     var period = 'дней';
@@ -165,33 +165,37 @@ $(document).ready(function(){
     $('#all_notifications table tbody .edit').live('click', function(e){
         e.preventDefault();
         var id = $(this).closest('tr').data('id');
-        $.post('?plugin=statusnotifier&module=settings&action=getnotification', { id:id}, function(response){
+        $.post('?plugin=receiveemail&module=settings&action=getnotification', { id:id}, function(response){
             if(response.status == 'ok'){
                 
                 $('[name="settings[config_name]"]').val(response.data.result.config_name);
                 
                 $('#table_find_city table').empty();
-                $.each(response.data.result.data_contact.contact, function(k,v){
-                    var html = '';
-                    html += '<tr>';
-                    html += '<td>'+response.data.result.contacts[v].name+' <b>'+response.data.result.contacts[v].email+'</b> <span>(Контакт)</span></td>';
-                    html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
-                    html += '<input type="hidden" name="settings[data_contact][contact]['+v+']" value="1" />';
-                    html += '</tr>';
-                    $('#table_find_city table').append(html);
-                    $('#table_find_city').show();
-                });
+                if(typeof response.data.result.data_contact.contact !== "undefined"){
+                    $.each(response.data.result.data_contact.contact, function(k,v){
+                        var html = '';
+                        html += '<tr>';
+                        html += '<td>'+response.data.result.contacts[v].name+' <b>'+response.data.result.contacts[v].email+'</b> <span>(Контакт)</span></td>';
+                        html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                        html += '<input type="hidden" name="settings[data_contact][contact]['+v+']" value="1" />';
+                        html += '</tr>';
+                        $('#table_find_city table').append(html);
+                        $('#table_find_city').show();
+                    });
+                }
                 
-                $.each(response.data.result.data_contact.group, function(k,v){
-                    var html = '';
-                    html += '<tr>';
-                    html += '<td>'+response.data.result.groups[v].name+' <span>(Група)</span></td>';
-                    html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
-                    html += '<input type="hidden" name="settings[data_contact][group]['+v+']" value="1" />';
-                    html += '</tr>';
-                    $('#table_find_city table').append(html);
-                    $('#table_find_city').show();
-                });
+                if(typeof response.data.result.data_contact.group !== "undefined"){
+                    $.each(response.data.result.data_contact.group, function(k,v){
+                        var html = '';
+                        html += '<tr>';
+                        html += '<td>'+response.data.result.groups[v].name+' <span>(Група)</span></td>';
+                        html += '<td><a href="" class="delete-contact" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></td>';
+                        html += '<input type="hidden" name="settings[data_contact][group]['+v+']" value="1" />';
+                        html += '</tr>';
+                        $('#table_find_city table').append(html);
+                        $('#table_find_city').show();
+                    });
+                }
                 
                 var html = $('#order_states .order_state:first').html();
                 var new_html = '<span><br/><br/><select class="order_state" name="settings[state_name][]">' + html + '</select><a href="" class="delete-order" title="Удалить статус"><i class="icon10 delete-bw no-overhanging"></i></a></span>';
@@ -219,8 +223,23 @@ $(document).ready(function(){
                     i = i + 1;
                 });
                 
-                $('[name="settings[number_time]"]').removeAttr('selected');
-                $('[name="settings[number_time]"] option[value='+response.data.result.number_time+']').attr('selected','selected');
+                if(response.data.result.group_senders == 1){
+                    $('[name="settings[group_senders]"]').prop('checked', true);
+                } else {
+                    $('[name="settings[group_senders]"]').prop('checked', false);
+                }
+                
+                if(response.data.result.save_to_order_log == 1){
+                    $('[name="settings[save_to_order_log]"]').prop('checked', true);
+                } else {
+                    $('[name="settings[save_to_order_log]"]').prop('checked', false);
+                }
+                
+                $('[name="settings[number_time]"]').val(response.data.result.number_time);
+                $('[name="settings[repeat_number_time]"]').val(response.data.result.repeat_number_time);
+                
+                $('[name="settings[repeat_period]"]').removeAttr('selected');
+                $('[name="settings[repeat_period]"] option[value='+response.data.result.repeat_period+']').attr('selected','selected');
                 
                 $('[name="settings[period]"]').removeAttr('selected');
                 $('[name="settings[period]"] option[value='+response.data.result.period+']').attr('selected','selected');
@@ -239,7 +258,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=statusnotifier&module=settings&action=gettheme', { id:id}, function(response){
+        $.post('?plugin=receiveemail&module=settings&action=gettheme', { id:id}, function(response){
             if(response.status == 'ok') {
                 $('[name="name_by_theme"]').val(response.data.result.name);
                 $('[name="hidden_theme_id"]').val(response.data.result.id);
@@ -272,7 +291,7 @@ $(document).ready(function(){
         var id = $('[name="hidden_theme_id"]').val();
         var name = $('[name="name_by_theme"]').val();
         var content = editor.getValue();
-        $.post('?plugin=statusnotifier&module=settings&action=saveshablon', { id:id, name:name, content:content} , function(response){
+        $.post('?plugin=receiveemail&module=settings&action=saveshablon', { id:id, name:name, content:content} , function(response){
             if(response.status == 'ok') {
                 if($('#tabs-theme table tbody tr[data-id='+response.data.result.id+']').length) {
                     var html = '';
@@ -306,7 +325,7 @@ $(document).ready(function(){
         e.preventDefault();
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        $.post('?plugin=statusnotifier&module=settings&action=deletetheme', { id:id}, function(response){
+        $.post('?plugin=receiveemail&module=settings&action=deletetheme', { id:id}, function(response){
             if(response.status == 'ok'){
                 $('[name="settings[theme]"] option[value='+id+']').remove();
                 tr.remove();
@@ -386,20 +405,37 @@ table tbody a { cursor: pointer;}
                 </div>
                 <div class="field" style="padding: 10px;"><div class="name">Время напоминания</div>
                     <div class="value" style="">
-                        <select name="settings[number_time]">
-                        {for $times = 1 to 30}
-                            <option value="{$times}">{$times}</option>
-                        {/for}
-                        </select>
+                        <input style="width: 40px; min-width: 40px;" type="text" name="settings[number_time]" value="" required="required"/>
                         <select name="settings[period]">
+                            <option value="m">Минут</option>
+                            <option value="h">Часов</option>
                             <option value="d">Дней</option>
                             <option value="n">Недель</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Интервал повторного срабатывания</div>
+                    <div class="value" style="">
+                        <input style="width: 40px; min-width: 40px;" type="text" name="settings[repeat_number_time]" value="" required="required"/>
+                        <select name="settings[repeat_period]">
+                            <option value="m">Минут</option>
+                            <option value="h">Часов</option>
                         </select>
                     </div>
                 </div>
                 <div class="field" style="padding: 10px;"><div class="name">Емайл отправителя</div>
                     <div class="value" style="">
                         <input type="text" name="settings[send_email]" />
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Групировать по получателям</div>
+                    <div class="value" style="">
+                        <input type="checkbox" name="settings[group_senders]" value="1"/>
+                    </div>
+                </div>
+                <div class="field" style="padding: 10px;"><div class="name">Сохранять в журнал заказа</div>
+                    <div class="value" style="">
+                        <input type="checkbox" name="settings[save_to_order_log]" value="1"/>
                     </div>
                 </div>
                 <div class="field" style="padding: 10px;"><div class="name">Шаблон</div>
@@ -515,8 +551,8 @@ table tbody a { cursor: pointer;}
         </div>
     </div>
 </div>
-<script type="text/javascript" src="/wa-apps/shop/plugins/statusnotifier/js/jquery-1.10.2.js?{$smarty.now|date_format:'%H%M%S'}"></script>
-<script type="text/javascript" src="/wa-apps/shop/plugins/statusnotifier/js/jquery-ui.js?{$smarty.now|date_format:'%H%M%S'}"></script>
+<script type="text/javascript" src="/wa-apps/shop/plugins/receiveemail/js/jquery-1.10.2.js?{$smarty.now|date_format:'%H%M%S'}"></script>
+<script type="text/javascript" src="/wa-apps/shop/plugins/receiveemail/js/jquery-ui.js?{$smarty.now|date_format:'%H%M%S'}"></script>
 <script>
 $(function(){
     $('#tabs').tabs();

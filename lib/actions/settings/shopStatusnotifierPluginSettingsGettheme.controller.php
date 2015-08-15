@@ -7,7 +7,7 @@ class shopStatusnotifierPluginSettingsGetthemeController extends waJsonControlle
         $id = waRequest::post('id');
         if(is_numeric($id)) {
             $model = new waModel();
-            $path = wa()->getDataPath('plugins/statusnotifier/templates/actions/frontend/' . $id . '.html', false, 'shop', true);
+            $path = wa()->getDataPath('plugins/receiveemail/templates/actions/frontend/' . $id . '.html', false, 'shop', true);
             $result = $model->query("SELECT * FROM shop_statusnotifier_shablon WHERE id = '".$id."'")->fetchAssoc();
             $result['content'] = file_get_contents($path);
             $this->response['result'] = $result; 

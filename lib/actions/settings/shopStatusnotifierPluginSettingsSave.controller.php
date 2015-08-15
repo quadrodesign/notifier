@@ -19,6 +19,9 @@ class shopStatusnotifierPluginSettingsSaveController extends waJsonController
                     unset($info['state_name']);
                     $info['state_name'] = $state_name;
                     
+                    $info['group_senders'] = $info['group_senders'] ? 1 : 0 ;
+                    $info['save_to_order_log'] = $info['save_to_order_log'] ? 1 : 0 ;
+                    
                     $result = $model->query("SELECT id FROM shop_statusnotifier_configuration WHERE config_name = '".mysql_escape_string($data['config_name'])."'")->fetchField();
                     
                     $val_update = '';

@@ -13,10 +13,10 @@ class shopStatusnotifierPluginSettingsAction extends waViewAction
         
         $all_notifications = $model->query("SELECT * FROM shop_statusnotifier_configuration ")->fetchAll();
         $themes = $model->query("SELECT * FROM shop_statusnotifier_shablon ")->fetchAll();
-        //timestamp
+//        timestamp
 //        $time = strtotime('2015-04-01 18:11:44');
-//        $day = strtotime('-7 day');
-//        date('Y-m-d H:i:s', $day);
+//        $day = strtotime('+20 minute', $time);
+//        print_r(date('Y-m-d H:i:s', $day));
         
         $this->view->assign('cron', array(
             'command' => 'php '.wa()->getConfig()->getRootPath().'/cli.php shop receiveemailPluginCheck',
