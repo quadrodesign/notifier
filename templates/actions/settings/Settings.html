@@ -488,7 +488,7 @@ table tbody a { cursor: pointer;}
                         <tr data-id="{$n.id}">
                             <td><a class="edit">{$n.config_name}</a></td>
                             <td><a class="edit">{$n.from}</a></td>
-                            <td><a class="edit">{$n.number_time} {if $n.period == 'd'}дней{else}месяцев{/if}</a></td>
+                            <td><a class="edit">{$n.number_time} {if $n.period == 'd'}дней{elseif $n.period == 'h'}часов{elseif $n.period == 'm'}минут{else}месяцев{/if}</a></td>
                             <td><a href="" class="delete-notification" title="Удалить напоминание"><i class="icon10 delete-bw no-overhanging"></i></a></td>
                         </tr>
                         {/foreach}
